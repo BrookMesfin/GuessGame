@@ -1,22 +1,15 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package guessgame;
 
-/**
- *
- * @author W0985353
- */
-public class GuessGame {
+import javax.swing.JFrame;
 
-    /**
-     * @param args the command line arguments
-     */
+public class GuessGame  {
+
+       
     public static void main(String[] args) {
-        // TODO code application logic here
+        GuessGameFrame guessGameFrame = new GuessGameFrame();
+        guessGameFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        guessGameFrame.setSize(400, 200);
+        guessGameFrame.setVisible(true);
     }
     
 }
