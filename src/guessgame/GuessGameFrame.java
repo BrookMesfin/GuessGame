@@ -1,34 +1,35 @@
 package guessgame;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
+
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
-import javax.swing.SwingConstants;
 
+@SuppressWarnings("serial")
 public class GuessGameFrame extends JFrame {
         
     private Random generator;
     private int randomGenerator;
-    private int number;
-    private int guessCount = 0;
-    private JLabel message;
+    private int guessCount = 1;
+    private int userInput;
+    private int currentDistance;
     private int lastDistance;
-    public JTextField userInputJTextField;
+    private List<Integer> guessedNumbers = new ArrayList<>();
+    private JTextField userInputJTextField;
     private JLabel prompt1JLabel;
     private JLabel prompt2JLabel;
     private JLabel messageJLabel;
     private JButton newGameJButton;
-    private Color background;
     private String attempt =  null;
     public  String turnToString = null;
-    public int userInput;
   
     public GuessGameFrame(){
         super("Guessing Game");
@@ -39,26 +40,26 @@ public class GuessGameFrame extends JFrame {
         
        prompt1JLabel = new JLabel();
        prompt2JLabel = new JLabel();
-       message = new JLabel();
        messageJLabel = new JLabel();   
        userInputJTextField = new JTextField(5);
-       userInputJTextField.setText("");
-       //userInputJTextField.setEditable(true);
+       userInputJTextField.setEditable(true);
        newGameJButton = new JButton();
        getContentPane().setBackground(Color.MAGENTA);
-   
-       message.setText("Guessed Number(s): ");            
+             
        prompt1JLabel.setText("I have a number between 1 and 1000.");
        messageJLabel.setText("Guess result appears here.");
        newGameJButton.setText( "New Game" );
-               
-       prompt1JLabel.setText("I have a number between 1 and 1000.");
-        
+         
         if (guessCount <= 1)
         {
             attempt = "first";
             prompt2JLabel.setText("Can you guess my number? Enter your "+attempt+" Guess:"); 
         }
+ 
+        GuessGameFrameHandler handler = new GuessGameFrameHandler();
+        userInputJTextField.addActionListener(handler);
+        NewGuessGameFrameHandler newGameHandle = new NewGuessGameFrameHandler();
+        newGameJButton.addActionListener(newGameHandle);
         
         add(prompt1JLabel);
         add(prompt2JLabel);
@@ -66,44 +67,71 @@ public class GuessGameFrame extends JFrame {
         add(messageJLabel);
         add(newGameJButton);
  
-        GuessGameFrameHandler handler = new GuessGameFrameHandler();
-        userInputJTextField.addActionListener(handler);
+ 
     }
     public void numberChecker (int userInput){
         guessCount++;
-        
+		guessedNumbers.add(userInput);
+		
         if (guessCount <= 1)
         {
             attempt = "first";
             prompt2JLabel.setText("Can you guess my number? Enter your "+attempt+" Guess:"); 
         }
-        else if (guessCount == 2)
+        else 
+        	if (guessCount == 2)
         {
+        	prompt1JLabel.setText("Guessed Number(s): "+guessedNumbers.toString().replace("[", "").replace("]", ""));  
             attempt = "nd";
             prompt2JLabel.setText("Can you guess my number? Enter your "+guessCount+attempt+" Guess:");
         }
-        else if(guessCount == 3)
+        else 
+        		if(guessCount == 3)
         {
+        	prompt1JLabel.setText("Guessed Number(s): "+guessedNumbers.toString().replace("[", "").replace("]", ""));  
             attempt = "rd";
             prompt2JLabel.setText("Can you guess my number? Enter your "+guessCount+attempt+" Guess:");
         }
-        else if (guessCount >= 4)
+        else 
+        			if (guessCount >= 4)
         {
+        	prompt1JLabel.setText("Guessed Number(s): "+guessedNumbers.toString().replace("[", "").replace("]", ""));  
             attempt = "th";
             prompt2JLabel.setText("Can you guess my number? Enter your "+guessCount+attempt+" Guess:");
         }
+
+        currentDistance = userInput - randomGenerator;
+        if(currentDistance < 0)
+        	currentDistance = -currentDistance;
         
-        if (userInput < randomGenerator){
-            getContentPane().setBackground(Color.ORANGE);
+        if (userInput == randomGenerator){
+        	prompt1JLabel.setText("After "+guessedNumbers.size()+" attempts, you got the number "+randomGenerator+" correct.");
+        	prompt2JLabel.setText("You are great! Try again? Click \"New Game\" button");
+            messageJLabel.setText("Correct!");
+            userInputJTextField.setEditable(false);
         }
-        else if (userInput > randomGenerator){
-            getContentPane().setBackground(Color.RED);
+        else 
+        	if (userInput > randomGenerator){	
+        		messageJLabel.setText("Too High, Try a lower number.");
         }
-        else if (userInput == randomGenerator){
-            getContentPane().setBackground(Color.GREEN);
+        else 
+        		if (userInput < randomGenerator){	
+        			messageJLabel.setText("Too Low, Try a higher number.");
         }
-            
         
+        if (userInput == randomGenerator){
+        	getContentPane().setBackground(Color.GREEN);
+        }
+        else
+        	if (currentDistance > lastDistance || lastDistance == 0)
+        	{
+			getContentPane().setBackground(Color.ORANGE);
+        	} 
+        else 
+        	{
+			getContentPane().setBackground(Color.RED);
+        	}
+       lastDistance = currentDistance;
     }
     
     private class GuessGameFrameHandler implements ActionListener {
@@ -111,9 +139,28 @@ public class GuessGameFrame extends JFrame {
         public void actionPerformed (ActionEvent event)
         {
             turnToString = userInputJTextField.getText();
-            userInput = Integer.parseInt(turnToString);               
-            numberChecker(userInput);
-       
+            userInput = Integer.parseInt(turnToString);
+            userInputJTextField.setText("");
+            numberChecker(userInput);          	
+        }
+    }
+    
+ private class NewGuessGameFrameHandler implements ActionListener {
+        
+        public void actionPerformed (ActionEvent event)
+        {
+        	generator = new Random(); 
+            randomGenerator = 1 + generator.nextInt(1000);
+        	getContentPane().setBackground(Color.YELLOW);
+        	guessCount = 1;
+        	currentDistance = 0;
+            lastDistance = 0;
+            guessedNumbers = new ArrayList<>();
+            prompt1JLabel.setText("I have a number between 1 and 1000.");
+            messageJLabel.setText("Guess result appears here.");
+            attempt = "first";
+            prompt2JLabel.setText("Can you guess my number? Enter your "+attempt+" Guess:");
+            userInputJTextField.setEditable(true);
         }
     }
 }
